@@ -52,13 +52,25 @@ export default function LoginPage() {
             
             <button 
               onClick={async () => {
-                // Create a real session to bypass anonymous-auth requirement
-                const { supabase } = await import('@/lib/supabase');
-                await supabase.auth.signUp({
-                  email: `demo_${Date.now()}@vitrion.app`,
-                  password: "demopassword123",
-                });
-                router.push("/onboarding");
+                try {
+                  const { supabase } = await import('@/lib/supabase');
+                  const randomEmail = `demo_${Date.now()}@vitrion.app`;
+                  const { data, error } = await supabase.auth.signUp({
+                    email: randomEmail,
+                    password: "demopassword123",
+                  });
+                  
+                  if (error) throw error;
+                  
+                  // Check if we actually got a session
+                  if (!data.session) {
+                    alert('⚠️ 註冊成功，但沒有取得登入狀態！\n這代表你的 Supabase 強制要求「信箱驗證」。\n\n👉 請到 Supabase 後台 -> Authentication -> Providers -> Email，將「Confirm email」關閉並 Save，然後再重新點一次！');
+                  } else {
+                    router.push("/onboarding");
+                  }
+                } catch (err: any) {
+                  alert('登入失敗：' + err.message + '\n\n👉 如果跑出 Rate Limit，請到 Supabase 後台 -> Authentication -> Rate Limits 調整限制，或是手動建一個帳號！');
+                }
               }} 
               className="mt-6 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
