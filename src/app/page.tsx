@@ -9,13 +9,13 @@ import { useDailyCheckIn } from "@/hooks/use-daily-checkin";
 import { useAuth } from "@/components/auth-provider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sun, Moon, ChevronRight, Info } from "lucide-react";
+import { Sun, Moon, Lock } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export default function Dashboard() {
   const router = useRouter();
-  const { profile, checkins } = useDailyCheckIn();
-  const [streak] = useState({ current: 12, longest: 28 });
+  const { profile, checkins, hasCheckedInToday } = useDailyCheckIn();
+  const [streak] = useState({ current: checkins.length || 0, longest: checkins.length || 0 });
 
   const { user, loading } = useAuth();
   
@@ -32,13 +32,12 @@ export default function Dashboard() {
   const currentDays = checkins.length;
   const TOTAL_DAYS = 14;
   const isCompleted = currentDays >= TOTAL_DAYS;
-  const daysLeft = Math.max(0, TOTAL_DAYS - currentDays);
 
   return (
-    <div className="relative min-h-screen bg-background">
+    <div className="relative min-h-[100dvh] bg-background overflow-x-hidden">
 
       {/* Header */}
-      <header className="relative z-10 border-b border-border/30 bg-background/95 backdrop-blur-3xl sticky top-0">
+      <header className="relative z-20 border-b border-border/30 bg-background/95 backdrop-blur-3xl sticky top-0">
         <div className="mx-auto max-w-2xl px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -47,120 +46,112 @@ export default function Dashboard() {
               </div>
               <div>
                 <h1 className="text-lg font-bold tracking-tight">Vitrion</h1>
-                <p className="text-[10px] text-muted-foreground">你的營養追蹤助手</p>
+                <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">
+                  Alpha Engine
+                </p>
               </div>
             </div>
-            <ThemeToggleClean />
+            <div className="flex items-center gap-4">
+              <StreakCounter currentStreak={streak.current} longestStreak={streak.longest} />
+              <ThemeToggleClean />
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 mx-auto max-w-2xl px-4 py-6 space-y-5 pb-24">
+      <main className="relative z-10 mx-auto max-w-2xl px-4 py-8 space-y-12 pb-24">
         
-        {/* ─── Section 1: 今天的任務 ─── */}
-        <section className="space-y-3">
-          <div className="flex items-center justify-between pb-1">
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-sm font-bold text-muted-foreground">今日行動清單</h2>
-            </div>
-            <StreakCounter currentStreak={streak.current} longestStreak={streak.longest} />
-          </div>
-          <ActionTodoList />
-          {streak.current > 0 && (
-             <p className="text-[10px] text-muted-foreground text-center mt-2 flex justify-center items-center gap-1">
-               <Info size={10} /> 連續打卡可以幫助系統為你建立更準確的健康基準線
-             </p>
-          )}
-        </section>
-
-        {/* ─── Section 2: 挑戰進度 ─── */}
-        <section className="space-y-3">
-          <h2 className="text-sm font-bold text-muted-foreground">進行中的挑戰</h2>
-          <ChallengeBanner 
-            challengeName={profile?.challengeName} 
-            currentDays={currentDays}
-            totalDays={TOTAL_DAYS}
-            isCompleted={isCompleted}
-            daysLeft={daysLeft}
-          />
-        </section>
-
-        {/* ─── Section 3: 趨勢 ─── */}
-        {currentDays >= 3 && (
-          <section className="space-y-3">
-            <h2 className="text-sm font-bold text-muted-foreground">你的變化</h2>
-            <StatTrendChart />
-          </section>
-        )}
-
-        {/* If less than 3 days of data, show encouragement instead of chart */}
-        {currentDays < 3 && (
-          <section className="p-8 border border-dashed border-border flex flex-col items-center justify-center text-center space-y-3 bg-foreground/[0.02]">
-            <div className="w-12 h-12 rounded-full bg-foreground/5 flex items-center justify-center mb-1">
-              <span className="text-xl">📊</span>
-            </div>
-            <div>
-              <p className="text-sm font-bold mb-1">正在收集基準數據</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                還差 {3 - currentDays} 天就能解鎖你的專屬趨勢圖。<br />
-                請繼續保持打卡，讓 Alpha 系統認識你的身體狀態。
-              </p>
-            </div>
-          </section>
-        )}
-
-        {/* ─── Section 4: 你的營養品 ─── */}
-        {profile?.currentSupplements && profile.currentSupplements.length > 0 && profile.currentSupplements[0] !== "none" && (
-          <section className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-muted-foreground">你的營養品</h2>
-              <Link href="/stack" className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5">
-                管理 <ChevronRight size={12} />
-              </Link>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {profile.currentSupplements.map((supp: string) => (
-                <div key={supp} className="px-3 py-1.5 border border-border text-xs font-medium">
-                  {getSupplementLabel(supp)}
+        {/* The One Button Check-in */}
+        <section className="flex flex-col items-center justify-center min-h-[25vh]">
+           {!hasCheckedInToday ? (
+             <Link href="/checkin" className="w-full">
+               <motion.div
+                 whileHover={{ scale: 1.02 }}
+                 whileTap={{ scale: 0.98 }}
+                 className="relative w-full aspect-[2.5/1] max-w-md mx-auto bg-foreground text-background flex flex-col items-center justify-center border-4 border-foreground overflow-hidden cursor-pointer shadow-[0_0_40px_rgba(0,0,0,0.1)] dark:shadow-[0_0_40px_rgba(255,255,255,0.1)]"
+               >
+                 <motion.div 
+                   animate={{ opacity: [0.5, 1, 0.5] }} 
+                   transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                   className="absolute inset-0 bg-background/10 mix-blend-overlay"
+                 />
+                 <h2 className="text-2xl font-bold tracking-wider relative z-10">啟動今日神經校準</h2>
+                 <p className="text-xs font-mono opacity-70 mt-2 relative z-10">STRIPE CALIBRATION SEQUENCE</p>
+               </motion.div>
+             </Link>
+           ) : (
+             <motion.div
+               initial={{ opacity: 0, scale: 0.9 }}
+               animate={{ opacity: 1, scale: 1 }}
+               className="w-full aspect-[2.5/1] max-w-md mx-auto border border-border bg-foreground/[0.02] flex flex-col items-center justify-center text-center px-4"
+             >
+                <div className="w-12 h-12 rounded-full bg-foreground text-background flex items-center justify-center mb-3">
+                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
+                <h2 className="text-lg font-bold">今日校準已完成</h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  進度 {currentDays}/{TOTAL_DAYS}，大腦神經網絡同步中
+                </p>
+             </motion.div>
+           )}
+        </section>
 
-        {/* Footer */}
-        <motion.footer
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="text-center pt-4"
-        >
-          <p className="text-[10px] text-muted-foreground/40 max-w-xs mx-auto">
-            Vitrion 的分析是基於你的自我紀錄，不構成醫療建議。
-          </p>
-        </motion.footer>
+        {/* The Blurred Locked Section containing previously requested features */}
+        <section className="relative mt-8">
+           {/* If not completed, show the blur overlay lock */}
+           {!isCompleted && (
+             <div className="absolute inset-0 z-20 backdrop-blur-md bg-background/40 flex flex-col items-center justify-center border border-border/50">
+                <motion.div 
+                   initial={{ opacity: 0, y: 10 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   className="bg-background border-2 border-foreground p-6 max-w-xs text-center shadow-2xl space-y-4"
+                >
+                   <Lock className="w-8 h-8 mx-auto" />
+                   <h3 className="font-bold text-lg">系統鎖定中</h3>
+                   <p className="text-xs text-muted-foreground leading-relaxed">
+                     Alpha 引擎需要至少 {TOTAL_DAYS} 天的基準資料。<br/>
+                     你目前已完成 {currentDays} 天。<br/><br/>
+                     唯有完成 14 天校準<br/>方可解鎖報告與進階控制台。
+                   </p>
+                   {/* Progress bar inside the lock */}
+                   <div className="w-full h-1.5 bg-border/40 overflow-hidden mt-4">
+                     <motion.div 
+                       initial={{ width: 0 }}
+                       animate={{ width: `${(currentDays / TOTAL_DAYS) * 100}%` }}
+                       className="h-full bg-foreground"
+                     />
+                   </div>
+                </motion.div>
+             </div>
+           )}
+
+           {/* The content that gets blurred & locked */}
+           <div className={`space-y-12 transition-all ${!isCompleted ? "opacity-30 pointer-events-none select-none filter blur-sm" : ""}`}>
+              
+              {/* Alpha Predict Report Headline */}
+              <div className="border-b-2 border-border pb-4">
+                 <h2 className="text-2xl font-bold">Alpha 預測報告</h2>
+                 <p className="text-xs text-muted-foreground font-mono mt-1">GENERATED BY VITRION AI</p>
+              </div>
+
+              {/* Action items that were previously built */}
+              <div className="space-y-4">
+                 <h3 className="text-sm font-bold text-muted-foreground">進階控制面板</h3>
+                 <ActionTodoList />
+              </div>
+
+              {/* Trend Chart */}
+              <div className="space-y-4">
+                 <h3 className="text-sm font-bold text-muted-foreground">神經元壓力趨勢</h3>
+                 <StatTrendChart />
+              </div>
+           </div>
+        </section>
+
       </main>
     </div>
   );
-}
-
-// ---- Helpers ----
-
-function getSupplementLabel(id: string): string {
-  const map: Record<string, string> = {
-    omega3: "魚油",
-    bcomplex: "B群",
-    d3: "維生素 D3",
-    magnesium: "鎂",
-    maca: "瑪卡",
-    probiotic: "益生菌",
-    melatonin: "褪黑激素",
-    collagen: "膠原蛋白",
-    vitc: "維生素 C",
-    zinc: "鋅",
-  };
-  return map[id] || id;
 }
 
 // ---- Sub-components ----
@@ -181,135 +172,5 @@ function ThemeToggleClean() {
     >
       {isDark ? <Sun size={16} /> : <Moon size={16} />}
     </button>
-  );
-}
-
-function CheckInCTA() {
-  const { hasCheckedInToday, todayCheckin } = useDailyCheckIn();
-
-  return (
-    <Link href="/checkin">
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        whileTap={{ scale: 0.98 }}
-        className={`p-5 border transition-all cursor-pointer flex items-center justify-between ${
-          hasCheckedInToday
-            ? "border-border bg-foreground/[0.03]"
-            : "border-foreground bg-foreground text-background"
-        }`}
-      >
-        <div className="flex items-center gap-4">
-          <div className="w-8 h-8 flex items-center justify-center font-bold text-lg">
-            {hasCheckedInToday ? "✓" : "→"}
-          </div>
-          <div>
-            <p className="text-sm font-bold">
-              {hasCheckedInToday ? "今天已經記錄了" : "記錄今天的感受"}
-            </p>
-            <p className={`text-xs mt-0.5 ${hasCheckedInToday ? "text-muted-foreground" : "opacity-70"}`}>
-              {hasCheckedInToday
-                ? `睡眠 ${todayCheckin?.sleepQuality} · 精力 ${todayCheckin?.energyLevel} · 專注 ${todayCheckin?.focusLevel}`
-                : "30 秒，6 個問題"}
-            </p>
-          </div>
-        </div>
-        {!hasCheckedInToday && (
-          <motion.div 
-            animate={{ x: [0, 4, 0] }} 
-            transition={{ repeat: Infinity, duration: 1.5 }}
-            className="text-lg"
-          >
-            →
-          </motion.div>
-        )}
-      </motion.div>
-    </Link>
-  );
-}
-
-function ChallengeBanner({ 
-  challengeName, 
-  currentDays, 
-  totalDays, 
-  isCompleted, 
-  daysLeft 
-}: { 
-  challengeName?: string;
-  currentDays: number;
-  totalDays: number;
-  isCompleted: boolean;
-  daysLeft: number;
-}) {
-  const progressPercent = Math.min((currentDays / totalDays) * 100, 100);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 }}
-      className="p-5 border border-border relative overflow-hidden"
-    >
-      {!isCompleted && (
-        <div 
-          className="absolute top-0 left-0 bottom-0 bg-foreground/[0.04] pointer-events-none transition-all duration-1000" 
-          style={{ width: `${progressPercent}%` }} 
-        />
-      )}
-
-      <div className="relative z-10 space-y-3">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <h3 className="text-sm font-bold">
-              {challengeName || "14 天基礎追蹤"}
-            </h3>
-            {isCompleted ? (
-              <p className="text-xs text-muted-foreground">
-                恭喜！挑戰完成了，可以看看分析結果
-              </p>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                已經記錄 {currentDays} 天，還剩 {daysLeft} 天
-              </p>
-            )}
-          </div>
-          
-          <div className={`px-2.5 py-1 text-xs font-bold border flex-shrink-0 ${
-            isCompleted 
-              ? "bg-foreground text-background border-foreground" 
-              : "border-border text-muted-foreground"
-          }`}>
-            {isCompleted ? "完成" : `${currentDays}/${totalDays}`}
-          </div>
-        </div>
-
-        {/* Progress bar */}
-        {!isCompleted && (
-          <div className="w-full h-1.5 bg-border/40 overflow-hidden rounded-full">
-            <motion.div 
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              className="h-full bg-foreground rounded-full"
-            />
-          </div>
-        )}
-
-        {/* What happens after completion */}
-        {!isCompleted && (
-          <p className="text-[10px] text-muted-foreground/60">
-            完成後 Vitrion 會告訴你，你吃的營養品對身體有沒有明顯幫助
-          </p>
-        )}
-
-        {isCompleted && (
-          <Link href="/insights">
-            <button className="w-full py-3 bg-foreground text-background text-sm font-bold tracking-wide transition-all mt-1">
-              查看分析報告 →
-            </button>
-          </Link>
-        )}
-      </div>
-    </motion.div>
   );
 }

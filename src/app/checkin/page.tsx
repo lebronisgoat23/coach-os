@@ -1,52 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { useDailyCheckIn } from "@/hooks/use-daily-checkin";
-import { CHECKIN_DIMENSIONS } from "@/lib/types";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { useDailyCheckIn } from "@/hooks/use-daily-checkin";
 
 export default function CheckInPage() {
   const router = useRouter();
-  const { hasCheckedInToday, todayCheckin, submitCheckIn } = useDailyCheckIn();
+  const { hasCheckedInToday, submitCheckIn, profile } = useDailyCheckIn();
 
   const [step, setStep] = useState(0);
-  const [scores, setScores] = useState<Record<string, number>>(() => {
-    if (todayCheckin) {
-      return {
-        sleepQuality: todayCheckin.sleepQuality,
-        energyLevel: todayCheckin.energyLevel,
-        focusLevel: todayCheckin.focusLevel,
-        stressLevel: todayCheckin.stressLevel,
-        bodyFeeling: todayCheckin.bodyFeeling,
-        mood: todayCheckin.mood,
-      } as Record<string, number>;
-    }
-    return {} as Record<string, number>;
-  });
-  const [note, setNote] = useState(todayCheckin?.note || "");
+  const [recoveryScore, setRecoveryScore] = useState(50);
   const [submitted, setSubmitted] = useState(false);
 
-  const currentDim = step < CHECKIN_DIMENSIONS.length ? CHECKIN_DIMENSIONS[step] : null;
-  const totalSteps = CHECKIN_DIMENSIONS.length + 1;
-
-  const handleScore = (value: number) => {
-    if (!currentDim) return;
-    setScores((prev) => ({ ...prev, [currentDim.key]: value }));
-    setTimeout(() => setStep((s) => s + 1), 300);
+  // When step 0 finishes, we proceed to step 1
+  const handleScoreConfirm = () => {
+    setStep(1);
   };
 
-  const handleSubmit = () => {
+  // Step 1 finishes Check-in
+  const handleStackConfirm = (tookStack: boolean) => {
+    const stackStatus = tookStack ? "[服用狀態：Yes]" : "[服用狀態：No]";
+
     submitCheckIn({
-      sleepQuality: scores.sleepQuality ?? 3,
-      energyLevel: scores.energyLevel ?? 3,
-      focusLevel: scores.focusLevel ?? 3,
-      stressLevel: scores.stressLevel ?? 3,
-      bodyFeeling: scores.bodyFeeling ?? 3,
-      mood: scores.mood ?? 3,
-      note: note.trim() || null,
+      sleepQuality: recoveryScore, // Store 0-100 here 
+      energyLevel: recoveryScore,   // For backwards compatibility metrics
+      focusLevel: recoveryScore,
+      stressLevel: 3,
+      bodyFeeling: 3,
+      mood: 3,
+      note: stackStatus,
     });
     setSubmitted(true);
   };
@@ -54,183 +37,134 @@ export default function CheckInPage() {
   // Success screen
   if (submitted) {
     return (
-      <div className="relative min-h-[100dvh] flex items-center justify-center p-6 bg-background">
+      <div className="relative min-h-[100dvh] flex flex-col items-center justify-center p-6 bg-background overflow-hidden">
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-sm space-y-8 text-center"
+           initial={{ opacity: 0, scale: 0.8 }}
+           animate={{ opacity: 1, scale: 1 }}
+           transition={{ type: "spring", bounce: 0.5 }}
+           className="z-10 text-center space-y-6"
         >
-          <div className="w-14 h-14 border-2 border-foreground mx-auto flex items-center justify-center font-mono text-lg">
-            ✓
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold">紀錄完成！</h2>
-            <p className="text-sm text-muted-foreground">
-              今天的感受已經記下來了，持續追蹤才看得出變化。
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 pt-2">
-            <motion.button
+           <h2 className="text-6xl font-bold font-mono">1/14</h2>
+           <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
+             CALIBRATION SUCCESS
+           </p>
+           <p className="text-xl">進度更新完成，明日再戰</p>
+           <motion.button
               whileTap={{ scale: 0.98 }}
               onClick={() => router.push("/")}
-              className="w-full py-4 bg-foreground text-background text-sm font-bold tracking-wide transition-opacity hover:opacity-90"
-            >
-              回到首頁
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              onClick={() => router.push("/insights")}
-              className="w-full py-4 text-foreground text-sm font-medium border border-border hover:border-foreground transition-colors"
-            >
-              看看趨勢分析
-            </motion.button>
-          </div>
+              className="mt-8 px-12 py-4 bg-foreground text-background text-sm font-bold tracking-wide transition-all"
+           >
+              返回大廳
+           </motion.button>
         </motion.div>
+        
+        {/* Background visual flair */}
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-5">
+           <div className="w-[500px] h-[500px] rounded-full border-[40px] border-foreground animate-pulse" />
+        </div>
       </div>
     );
   }
 
+  const slideVariants = {
+    enter: { x: 80, opacity: 0 },
+    center: { x: 0, opacity: 1 },
+    exit: { x: -80, opacity: 0 }
+  };
+
   return (
-    <div className="relative min-h-screen bg-background text-foreground">
-      <main className="relative z-10 mx-auto max-w-md px-4 py-8 space-y-6 pb-24">
-        {/* Header */}
-        <div className="text-center space-y-1">
-          <h1 className="text-lg font-bold">
-            {hasCheckedInToday ? "更新今天的紀錄" : "今天感覺怎樣？"}
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            不用穿戴裝置，30 秒就好
-          </p>
-        </div>
-
-        {/* Progress bar - thicker and more visible */}
-        <div className="flex gap-1.5">
-          {Array.from({ length: totalSteps }).map((_, i) => (
-            <div
-              key={i}
-              className="h-1 flex-1 overflow-hidden bg-border/60 rounded-full"
-            >
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: i < step ? "100%" : i === step ? "50%" : "0%" }}
-                className="h-full bg-foreground rounded-full"
-                transition={{ duration: 0.3 }}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Step content */}
-        <AnimatePresence mode="wait">
-          {currentDim ? (
-            <motion.div
-              key={currentDim.key}
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -40 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Card className="border-border bg-card/80 backdrop-blur-xl shadow-none">
-                <CardContent className="pt-10 pb-8 text-center space-y-8">
-                  <div className="space-y-2">
-                    <h2 className="text-2xl font-bold">{currentDim.label}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {currentDim.description}
-                    </p>
-                  </div>
-
-                  {/* Rating buttons - bigger touch targets */}
-                  <div className="flex justify-between gap-2 px-2">
-                    {[1, 2, 3, 4, 5].map((v) => {
-                      const isSelected = scores[currentDim.key] === v;
-                      return (
-                        <motion.button
-                          key={v}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => handleScore(v)}
-                          className={`w-14 h-14 flex items-center justify-center border-2 font-bold text-lg transition-all ${
-                            isSelected
-                              ? "bg-foreground text-background border-foreground"
-                              : "bg-transparent hover:bg-foreground/5 border-border text-foreground"
-                          }`}
-                        >
-                          {v}
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Low/High labels */}
-                  <div className="flex justify-between px-4">
-                    <span className="text-xs text-muted-foreground">{currentDim.lowLabel}</span>
-                    <span className="text-xs text-muted-foreground">{currentDim.highLabel}</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <p className="text-center text-xs text-muted-foreground mt-4">
-                {step + 1} / {totalSteps}
-              </p>
-            </motion.div>
-          ) : (
-            /* Note step */
-            <motion.div
-              key="note"
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -40 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Card className="border-border bg-card/80 backdrop-blur-xl shadow-none">
-                <CardContent className="pt-8 pb-6 space-y-6">
-                  <div className="text-center space-y-2">
-                    <h2 className="text-xl font-bold">還有什麼想記的？</h2>
-                    <p className="text-xs text-muted-foreground">
-                      選填，例如昨晚失眠、喝了咖啡、有運動...
-                    </p>
-                  </div>
-
-                  <Textarea
-                    placeholder="寫下任何你覺得可能影響身體狀態的事..."
-                    value={note}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNote(e.target.value)}
-                    className="min-h-[100px] bg-background border-border resize-none px-4 py-3 text-sm focus-visible:ring-1 focus-visible:ring-foreground"
-                    maxLength={200}
-                  />
-
-                  <p className="text-[10px] text-muted-foreground text-right">
-                    {note.length}/200
-                  </p>
-
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleSubmit}
-                    className="w-full py-4 bg-foreground text-background text-sm font-bold tracking-wide transition-all"
-                  >
-                    {hasCheckedInToday ? "更新紀錄" : "完成紀錄"}
-                  </motion.button>
-                </CardContent>
-              </Card>
-
-              <p className="text-center text-xs text-muted-foreground mt-4">
-                {totalSteps} / {totalSteps}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Back button */}
-        {step > 0 && (
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            onClick={() => setStep((s) => s - 1)}
-            className="mx-auto block text-xs text-muted-foreground hover:text-foreground transition-colors mt-4"
+    <div className="min-h-[100dvh] flex flex-col px-6 max-w-md mx-auto bg-background relative overflow-hidden">
+      <AnimatePresence mode="wait">
+        
+        {/* Q1: Recovery Score */}
+        {step === 0 && (
+          <motion.div
+            key="q1"
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="w-full h-[100dvh] flex flex-col justify-center pb-20"
           >
-            ← 上一題
-          </motion.button>
+            <div className="space-y-4 mb-20 text-center">
+              <p className="text-xs text-muted-foreground font-bold tracking-widest uppercase">CHECK-IN 1/2</p>
+              <h1 className="text-3xl font-bold leading-snug">
+                昨晚的整體恢復狀態<br/>感覺如何？
+              </h1>
+            </div>
+            
+            <div className="space-y-12">
+               <div className="flex flex-col items-center">
+                  <span className="text-7xl font-mono font-bold mb-4">{recoveryScore}</span>
+                  <input 
+                     type="range" 
+                     min="0" max="100" 
+                     value={recoveryScore}
+                     onChange={(e) => setRecoveryScore(Number(e.target.value))}
+                     className="w-full h-2 bg-foreground/10 rounded-full appearance-none cursor-pointer focus:outline-none"
+                     style={{ accentColor: "black" }} // specific styling for slider
+                  />
+                  <div className="w-full flex justify-between mt-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                     <span>0 (死亡狀態)</span>
+                     <span>100 (超頻中)</span>
+                  </div>
+               </div>
+
+               <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleScoreConfirm}
+                  className="w-full py-5 bg-foreground text-background text-sm font-bold tracking-wide transition-all"
+               >
+                  下一步
+               </motion.button>
+            </div>
+          </motion.div>
         )}
-      </main>
+
+        {/* Q2: Yes/No Stack */}
+        {step === 1 && (
+          <motion.div
+            key="q2"
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="w-full h-[100dvh] flex flex-col justify-center pb-20"
+          >
+            <button onClick={() => setStep(0)} className="absolute top-12 left-0 text-muted-foreground">
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <div className="space-y-4 mb-16 text-center">
+              <p className="text-xs text-muted-foreground font-bold tracking-widest uppercase">CHECK-IN 2/2</p>
+              <h1 className="text-3xl font-bold leading-snug">
+                你今天有照計畫執行<br/>「{profile?.challengeName || "指定協議"}」嗎？
+              </h1>
+            </div>
+            
+            <div className="flex gap-4">
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleStackConfirm(false)}
+                className="flex-1 py-12 border border-border bg-background hover:bg-foreground/5 transition-colors flex flex-col items-center justify-center gap-3"
+              >
+                <span className="text-3xl">✖</span>
+                <span className="font-bold">沒有</span>
+              </motion.button>
+
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleStackConfirm(true)}
+                className="flex-1 py-12 border border-foreground bg-foreground text-background hover:opacity-90 transition-opacity flex flex-col items-center justify-center gap-3"
+              >
+                <span className="text-3xl">✔</span>
+                <span className="font-bold">有</span>
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
