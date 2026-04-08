@@ -54,27 +54,29 @@ export default function LoginPage() {
               onClick={async () => {
                 try {
                   const { supabase } = await import('@/lib/supabase');
-                  const randomEmail = `demo_${Date.now()}@vitrion.app`;
-                  const { data, error } = await supabase.auth.signUp({
-                    email: randomEmail,
-                    password: "demopassword123",
-                  });
+                  const { data, error } = await supabase.auth.signInAnonymously();
                   
-                  if (error) throw error;
-                  
-                  // Check if we actually got a session
-                  if (!data.session) {
-                    alert('⚠️ 註冊成功，但沒有取得登入狀態！\n這代表你的 Supabase 強制要求「信箱驗證」。\n\n👉 請到 Supabase 後台 -> Authentication -> Providers -> Email，將「Confirm email」關閉並 Save，然後再重新點一次！');
-                  } else {
-                    router.push("/onboarding");
+                  if (error || !data.session) {
+                     alert(
+                       '⚠️ 測試登入被阻擋了！\n\n' +
+                       '因為你的 Supabase 尚未開放「匿名登入 (Anonymous Sign-ins)」。\n\n' +
+                       '👉 解決辦法：\n' +
+                       '1. 到 Supabase 後台 -> Authentication -> Providers\n' +
+                       '2. 找到「Anonymous」並把它打開 (Enable)\n' +
+                       '3. 儲存後，重整這個網頁再試一次！'
+                     );
+                     return;
                   }
+                  
+                  // Success
+                  router.push("/onboarding");
                 } catch (err: any) {
-                  alert('登入失敗：' + err.message + '\n\n👉 如果跑出 Rate Limit，請到 Supabase 後台 -> Authentication -> Rate Limits 調整限制，或是手動建一個帳號！');
+                  alert('登入失敗：' + err.message);
                 }
               }} 
               className="mt-6 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              （開發用）使用快速註冊並跳到設定 →
+              （開發用）點此生成測試帳號並跳到設定 →
             </button>
           </motion.div>
         ) : (
