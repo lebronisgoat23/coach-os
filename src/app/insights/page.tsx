@@ -12,8 +12,8 @@ export default function InsightsPage() {
     // Uses native Web Share API if available
     if (navigator.share) {
       navigator.share({
-        title: "Vitrion Alpha Score",
-        text: "我目前的 Vitrion 神經抗壓狀態評級：[A級] 超頻穩定中！",
+        title: "Vitrion 健康分析報告",
+        text: "我目前的狀態評級：[極佳] 狀態絕佳！",
         url: window.location.origin
       }).catch(console.error);
     } else {
@@ -28,7 +28,7 @@ export default function InsightsPage() {
           <ChevronLeft size={16} /> <span className="text-sm font-bold">返回</span>
         </button>
         <div className="font-mono text-xs tracking-widest uppercase">
-          Alpha Report
+          Vitrion Report
         </div>
         <div className="w-8"></div>
       </header>
@@ -52,7 +52,7 @@ export default function InsightsPage() {
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="font-bold text-lg tracking-widest">VITRION</h3>
-                <p className="text-[10px] uppercase font-mono opacity-60 mt-1">Alpha Engine Analysis</p>
+                <p className="text-[10px] uppercase font-mono opacity-60 mt-1">個人化狀態分析</p>
               </div>
               <div className="border border-background/20 px-2 py-1 text-xs font-mono">
                 CYCLE #01
@@ -60,7 +60,7 @@ export default function InsightsPage() {
             </div>
 
             <div>
-              <p className="text-xs uppercase tracking-wider opacity-80 mb-2">VAS 神經抗壓分數</p>
+              <p className="text-xs uppercase tracking-wider opacity-80 mb-2">當前身心健康分數</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-6xl font-bold font-mono">87</span>
                 <span className="text-xl font-bold opacity-50">/100</span>
@@ -69,13 +69,13 @@ export default function InsightsPage() {
 
             <div className="pt-4 border-t border-background/20 space-y-4">
               <div>
-                 <p className="text-[10px] uppercase opacity-60 font-bold mb-1">大腦評級狀態</p>
-                 <p className="text-2xl font-bold">[A級] 超頻穩定中</p>
+                 <p className="text-[10px] uppercase opacity-60 font-bold mb-1">整體狀態評級</p>
+                 <p className="text-2xl font-bold">[穩定] 狀態極佳</p>
               </div>
               
               <div className="bg-background/10 p-3">
                  <p className="text-xs font-medium leading-relaxed">
-                   ⚔️ 你的神經護甲值與專注力指數，已成功擊敗全台 <span className="font-bold underline decoration-wavy underline-offset-2">95%</span> 交易員與科技從業者。
+                   🌟 您的恢復力與專注表現，已經超越了同年齡層 <span className="font-bold underline decoration-wavy underline-offset-2">95%</span> 的使用者，請繼續保持！
                  </p>
               </div>
             </div>
@@ -84,7 +84,7 @@ export default function InsightsPage() {
           <div className="relative z-10 border-t border-background/20 pt-4 mt-8 flex justify-between items-end">
             <div className="w-1/2 space-y-2">
               <div className="flex justify-between text-[10px] font-mono">
-                <span>RECOVERY</span>
+                <span>恢復力</span>
                 <span>85%</span>
               </div>
               <div className="w-full h-1 bg-background/20 rounded-full overflow-hidden">
@@ -92,7 +92,7 @@ export default function InsightsPage() {
               </div>
 
               <div className="flex justify-between text-[10px] font-mono mt-2">
-                <span>STRESS LOAD</span>
+                <span>壓力值</span>
                 <span>40%</span>
               </div>
               <div className="w-full h-1 bg-background/20 rounded-full overflow-hidden">

@@ -36,15 +36,15 @@ export default function OnboardingPage() {
     if (stackType === 'focus') {
       primaryGoal = "FOCUS";
       supplements = ["caffeine", "theanine"];
-      challengeName = "極限專注協議";
+      challengeName = "提升專注計畫";
     } else if (stackType === 'reset') {
       primaryGoal = "SLEEP";
       supplements = ["magnesium", "zinc", "melatonin"];
-      challengeName = "中樞神經重置";
+      challengeName = "深層放鬆計畫";
     } else {
       primaryGoal = "ENERGY";
       supplements = ["none"];
-      challengeName = "純粹基準線追蹤";
+      challengeName = "每日基礎追蹤";
     }
 
     saveProfile({
@@ -162,8 +162,8 @@ export default function OnboardingPage() {
                <span className="font-mono text-xs font-bold animate-pulse">ALPHA</span>
             </div>
             <div className="text-center space-y-2">
-              <p className="text-lg font-bold">整合神經網絡數據中</p>
-              <p className="text-xs text-muted-foreground">模擬 Heart Rate Variability (HRV) 特徵...</p>
+              <p className="text-lg font-bold">正在為您建立專屬計畫...</p>
+              <p className="text-xs text-muted-foreground">分析您的生活作息與壓力指數...</p>
             </div>
           </motion.div>
         )}
@@ -180,28 +180,28 @@ export default function OnboardingPage() {
             <div className="relative p-6 border border-border bg-foreground/[0.02] overflow-hidden">
                <div className="absolute top-0 right-0 p-3 opacity-20"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
                <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase mb-4">Initial Assessment</p>
-               <h2 className="text-xl font-bold mb-3">神經透支警告</h2>
+               <h2 className="text-xl font-bold mb-3">身心狀態評估報告</h2>
                <p className="text-sm text-foreground/80 leading-relaxed mb-4">
-                 系統偵測到長期的神經疲勞累積。你的 HRV（心率變異率）可能正處於低檔徘徊。
+                 根據剛才的問卷，您似乎累積了些許疲勞。
                  <br/><br/>
-                 這並非你缺乏意志力，而是長期的身體壓力未被釋放。我們來幫你重新校準。
+                 這不是您的錯，現代生活的快節奏很容易讓人透支。讓我們透過接下來的 14 天追蹤，幫您找回原本的好狀態吧！
                </p>
 
-               {/* Fake HRV visual */}
+               {/* Fake HRV visual replaced by abstract positive visual */}
                <div className="h-12 w-full flex items-end gap-1 opacity-50">
                  {[40, 35, 20, 15, 25, 10, 5].map((h, i) => (
                    <div key={i} className="flex-1 bg-foreground" style={{ height: `${h}%` }}></div>
                  ))}
                </div>
-               <p className="text-[10px] text-right mt-2 font-mono text-muted-foreground">HRV TREND (SIMULATED)</p>
+               <p className="text-[10px] text-right mt-2 font-mono text-muted-foreground">ENERGY TREND</p>
             </div>
 
             <div className="space-y-4">
-               <h3 className="text-sm font-bold mt-2">選擇專屬介入協議 (14 天週期)：</h3>
+               <h3 className="text-sm font-bold mt-2">選擇您的 14 天改善計畫：</h3>
                
-               <StackBtn onClick={() => handleSelectStack('focus')} title="[極限專注協議]" desc="追蹤：咖啡因 + L-茶氨酸" />
-               <StackBtn onClick={() => handleSelectStack('reset')} title="[中樞神經重置]" desc="追蹤：鎂 + 鋅 + 褪黑激素" />
-               <StackBtn onClick={() => handleSelectStack('baseline')} title="[純粹基準線]" desc="純紀錄不介入，建立自然狀態基準" />
+               <StackBtn onClick={() => handleSelectStack('focus')} title="[提升專注計畫]" desc="追蹤：咖啡因 + L-茶氨酸" />
+               <StackBtn onClick={() => handleSelectStack('reset')} title="[深層放鬆計畫]" desc="追蹤：鎂 + 鋅 + 幫助睡眠元素" />
+               <StackBtn onClick={() => handleSelectStack('baseline')} title="[每日基礎追蹤]" desc="單純記錄每天狀態，不特別改變飲食" />
             </div>
           </motion.div>
         )}

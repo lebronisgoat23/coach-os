@@ -164,6 +164,8 @@ function getSupplementLabel(id: string): string {
     collagen: "膠原蛋白",
     vitc: "維生素 C",
     zinc: "鋅",
+    caffeine: "咖啡因",
+    theanine: "L-茶氨酸",
   };
   return map[id] || id;
 }

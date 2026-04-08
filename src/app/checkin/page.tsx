@@ -46,9 +46,9 @@ export default function CheckInPage() {
         >
            <h2 className="text-6xl font-bold font-mono">1/14</h2>
            <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
-             CALIBRATION SUCCESS
+             CHECK-IN COMPLETE
            </p>
-           <p className="text-xl">進度更新完成，明日再戰</p>
+           <p className="text-xl">今天辛苦了，我們明天見</p>
            <motion.button
               whileTap={{ scale: 0.98 }}
               onClick={() => router.push("/")}
@@ -139,7 +139,7 @@ export default function CheckInPage() {
             <div className="space-y-4 mb-16 text-center">
               <p className="text-xs text-muted-foreground font-bold tracking-widest uppercase">CHECK-IN 2/2</p>
               <h1 className="text-3xl font-bold leading-snug">
-                你今天有照計畫執行<br/>「{profile?.challengeName || "指定協議"}」嗎？
+                你今天有照計畫執行<br/>「{profile?.challengeName || "指定計畫"}」嗎？
               </h1>
             </div>
             
