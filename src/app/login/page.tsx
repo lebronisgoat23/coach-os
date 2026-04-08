@@ -9,14 +9,25 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"IDLE" | "LOADING" | "SENT">("IDLE");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
     
     setState("LOADING");
-    setTimeout(() => {
+    try {
+      const { supabase } = await import('@/lib/supabase');
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
+      });
+      if (error) throw error;
       setState("SENT");
-    }, 1500);
+    } catch (err: any) {
+      alert("發送登入信件失敗：" + err.message);
+      setState("IDLE");
+    }
   };
 
   return (
