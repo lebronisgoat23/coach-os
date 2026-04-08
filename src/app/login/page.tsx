@@ -61,34 +61,6 @@ export default function LoginPage() {
               </p>
             </div>
             
-            <button 
-              onClick={async () => {
-                try {
-                  const { supabase } = await import('@/lib/supabase');
-                  const { data, error } = await supabase.auth.signInAnonymously();
-                  
-                  if (error || !data.session) {
-                     alert(
-                       '⚠️ 測試登入被阻擋了！\n\n' +
-                       '因為你的 Supabase 尚未開放「匿名登入 (Anonymous Sign-ins)」。\n\n' +
-                       '👉 解決辦法：\n' +
-                       '1. 到 Supabase 後台 -> Authentication -> Providers\n' +
-                       '2. 找到「Anonymous」並把它打開 (Enable)\n' +
-                       '3. 儲存後，重整這個網頁再試一次！'
-                     );
-                     return;
-                  }
-                  
-                  // Success
-                  router.push("/onboarding");
-                } catch (err: any) {
-                  alert('登入失敗：' + err.message);
-                }
-              }} 
-              className="mt-6 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              （開發用）點此生成測試帳號並跳到設定 →
-            </button>
           </motion.div>
         ) : (
           <motion.div 
@@ -136,6 +108,31 @@ export default function LoginPage() {
               className="w-full py-4 border border-border text-foreground text-sm font-bold tracking-wide transition-colors hover:bg-foreground/5 flex items-center justify-center gap-2"
             >
               用 Google 帳號登入
+            </button>
+            
+            <button 
+              type="button"
+              onClick={async () => {
+                try {
+                  const { supabase } = await import('@/lib/supabase');
+                  const { data, error } = await supabase.auth.signInAnonymously();
+                  
+                  if (error || !data.session) {
+                     alert(
+                       '⚠️ 測試登入被阻擋了！\n\n' +
+                       '要求：到 Supabase -> Authentication -> Providers 打開「Anonymous」'
+                     );
+                     return;
+                  }
+                  
+                  router.push("/onboarding");
+                } catch (err: any) {
+                  alert('登入失敗：' + err.message);
+                }
+              }} 
+              className="mt-6 w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              （開發用）點此生成測試帳號並跳到設定 →
             </button>
           </motion.div>
         )}

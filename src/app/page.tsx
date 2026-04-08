@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { StatTrendChart } from "@/components/vitrion/stat-trend-chart";
 import { StreakCounter } from "@/components/vitrion/streak-counter";
+import { ActionTodoList } from "@/components/vitrion/action-todo-list";
 import { useDailyCheckIn } from "@/hooks/use-daily-checkin";
 import { useAuth } from "@/components/auth-provider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sun, Moon, ChevronRight } from "lucide-react";
+import { Sun, Moon, ChevronRight, Info } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export default function Dashboard() {
@@ -59,11 +60,18 @@ export default function Dashboard() {
         
         {/* ─── Section 1: 今天的任務 ─── */}
         <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-muted-foreground">今天</h2>
+          <div className="flex items-center justify-between pb-1">
+            <div className="flex items-center gap-1.5">
+              <h2 className="text-sm font-bold text-muted-foreground">今日行動清單</h2>
+            </div>
             <StreakCounter currentStreak={streak.current} longestStreak={streak.longest} />
           </div>
-          <CheckInCTA />
+          <ActionTodoList />
+          {streak.current > 0 && (
+             <p className="text-[10px] text-muted-foreground text-center mt-2 flex justify-center items-center gap-1">
+               <Info size={10} /> 連續打卡可以幫助系統為你建立更準確的健康基準線
+             </p>
+          )}
         </section>
 
         {/* ─── Section 2: 挑戰進度 ─── */}
@@ -88,9 +96,17 @@ export default function Dashboard() {
 
         {/* If less than 3 days of data, show encouragement instead of chart */}
         {currentDays < 3 && (
-          <section className="p-6 border border-dashed border-border text-center space-y-2">
-            <p className="text-sm font-medium">還差 {3 - currentDays} 天就能看到趨勢圖</p>
-            <p className="text-xs text-muted-foreground">持續記錄，才能發現你的身體有什麼變化</p>
+          <section className="p-8 border border-dashed border-border flex flex-col items-center justify-center text-center space-y-3 bg-foreground/[0.02]">
+            <div className="w-12 h-12 rounded-full bg-foreground/5 flex items-center justify-center mb-1">
+              <span className="text-xl">📊</span>
+            </div>
+            <div>
+              <p className="text-sm font-bold mb-1">正在收集基準數據</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                還差 {3 - currentDays} 天就能解鎖你的專屬趨勢圖。<br />
+                請繼續保持打卡，讓 Alpha 系統認識你的身體狀態。
+              </p>
+            </div>
           </section>
         )}
 
