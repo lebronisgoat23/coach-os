@@ -29,11 +29,13 @@ export function useDailyCheckIn() {
 
     const loadData = async () => {
       // 1. Load Profile
-      const { data: profileData } = await supabase
+      const { data: profileDataTemp } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", user.id)
         .single();
+        
+      const profileData = profileDataTemp as any;
       
       if (profileData) {
         setProfile({
@@ -41,6 +43,14 @@ export function useDailyCheckIn() {
           primaryGoal: profileData.primary_goal ?? "",
           challengeName: profileData.challenge_name ?? "",
           currentSupplements: profileData.current_supplements ?? [],
+        });
+      } else {
+        // No profile exists yet (new anonymous user)
+        setProfile({
+          hasCompletedOnboarding: false,
+          primaryGoal: "",
+          challengeName: "",
+          currentSupplements: [],
         });
       }
 
@@ -89,7 +99,7 @@ export function useDailyCheckIn() {
         challenge_name: newProfile.challengeName,
         current_supplements: newProfile.currentSupplements,
         has_completed_onboarding: newProfile.hasCompletedOnboarding,
-      });
+      } as any);
       
     if (error) {
       console.error("Failed to save profile:", error);
@@ -142,7 +152,7 @@ export function useDailyCheckIn() {
           body_feeling: data.bodyFeeling,
           mood: data.mood,
           note: data.note,
-        })
+        } as any)
         .select()
         .single();
 
