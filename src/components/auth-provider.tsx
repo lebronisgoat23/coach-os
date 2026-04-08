@@ -35,16 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const initAuth = async () => {
       const { data: { session: s } } = await supabase.auth.getSession();
-      
-      if (!s) {
-        // Auto-login as anonymous so they don't get stuck
-        const { data: anonData } = await supabase.auth.signInAnonymously();
-        setSession(anonData.session);
-        setUser(anonData.user);
-      } else {
-        setSession(s);
-        setUser(s.user);
-      }
+      setSession(s);
+      setUser(s?.user ?? null);
       setLoading(false);
     };
 

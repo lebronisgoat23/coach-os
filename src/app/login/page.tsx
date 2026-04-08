@@ -51,10 +51,18 @@ export default function LoginPage() {
             </div>
             
             <button 
-              onClick={() => router.push("/onboarding")} 
+              onClick={async () => {
+                // Create a real session to bypass anonymous-auth requirement
+                const { supabase } = await import('@/lib/supabase');
+                await supabase.auth.signUp({
+                  email: `demo_${Date.now()}@vitrion.app`,
+                  password: "demopassword123",
+                });
+                router.push("/onboarding");
+              }} 
               className="mt-6 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              （開發用）直接跳到設定 →
+              （開發用）使用快速註冊並跳到設定 →
             </button>
           </motion.div>
         ) : (

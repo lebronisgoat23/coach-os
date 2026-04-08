@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { StatTrendChart } from "@/components/vitrion/stat-trend-chart";
 import { StreakCounter } from "@/components/vitrion/streak-counter";
 import { useDailyCheckIn } from "@/hooks/use-daily-checkin";
+import { useAuth } from "@/components/auth-provider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Sun, Moon, ChevronRight } from "lucide-react";
@@ -15,11 +16,17 @@ export default function Dashboard() {
   const { profile, checkins } = useDailyCheckIn();
   const [streak] = useState({ current: 12, longest: 28 });
 
+  const { user, loading } = useAuth();
+  
   useEffect(() => {
-    if (profile !== null && !profile.hasCompletedOnboarding) {
-      router.push("/onboarding");
+    if (loading) return;
+    
+    if (!user) {
+      router.replace("/login");
+    } else if (profile !== null && !profile.hasCompletedOnboarding) {
+      router.replace("/onboarding");
     }
-  }, [profile, router]);
+  }, [user, profile, loading, router]);
 
   const currentDays = checkins.length;
   const TOTAL_DAYS = 14;
