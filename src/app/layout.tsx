@@ -15,10 +15,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Vitrion — AI 個人化營養管家",
+  title: "Vitrion — 身體決策 OS",
   description:
-    "透過 RPG 遊戲化介面，追蹤你的補給品攝取並視覺化身體狀態變化。你的專屬營養冒險從這裡開始。",
-  keywords: ["nutrition", "supplements", "health", "gamification", "RPG", "biometrics"],
+    "把身體回報轉成可回測 observations、deterministic issues 與 coach-reviewable recommendations 的健康決策輔助系統。",
+  keywords: ["health", "coaching", "decision support", "GLP-1", "nutrition", "biometrics"],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

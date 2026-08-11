@@ -10,51 +10,69 @@ export default function OnboardingPage() {
   const { saveProfile } = useDailyCheckIn();
   const [step, setStep] = useState(0);
 
-  // Form states
-  const [q1, setQ1] = useState("");
-  const [q2, setQ2] = useState("");
-  const [q3, setQ3] = useState("");
+  const [primaryGoal, setPrimaryGoal] = useState("");
+  const [supplements, setSupplements] = useState<string[]>([]);
+  const [finalChallengeName, setFinalChallengeName] = useState("");
+  
+  const GOALS = [
+    { id: "WEIGHT", title: "減重卡關", desc: "追蹤體重、活動量、睡眠與飲食執行率" },
+    { id: "SLEEP", title: "想睡得更好", desc: "改善睡眠品質，起床更有精神" },
+    { id: "ENERGY", title: "常常沒精神", desc: "提升日常體力，不想一直累" },
+    { id: "STRESS", title: "壓力太大", desc: "容易緊繃焦慮，想放鬆一點" },
+  ];
 
-  const handleAnswer = (questionIndex: number, answer: string) => {
-    if (questionIndex === 0) setQ1(answer);
-    if (questionIndex === 1) setQ2(answer);
-    if (questionIndex === 2) {
-      setQ3(answer);
-      // Move to diagnosis loading
-      setStep(3);
-      setTimeout(() => setStep(4), 2500); // Wait 2.5s to show analysis fake loader
-      return;
-    }
-    setStep(prev => prev + 1);
+  const SUPPS = [
+    { id: "omega3", name: "魚油 Omega-3" },
+    { id: "bcomplex", name: "B群" },
+    { id: "d3", name: "維生素 D3" },
+    { id: "magnesium", name: "鎂" },
+    { id: "maca", name: "瑪卡" },
+    { id: "probiotic", name: "益生菌" },
+    { id: "melatonin", name: "褪黑激素" },
+    { id: "collagen", name: "膠原蛋白" },
+    { id: "vitc", name: "維生素 C" },
+    { id: "zinc", name: "鋅" },
+    { id: "none", name: "目前沒有在吃" },
+  ];
+
+  const handleGoalSelect = (id: string) => {
+    setPrimaryGoal(id);
+    setTimeout(() => setStep(1), 350);
   };
 
-  const handleSelectStack = (stackType: 'focus' | 'reset' | 'baseline') => {
-    let primaryGoal = "";
-    let supplements: string[] = [];
-    let challengeName = "";
-
-    if (stackType === 'focus') {
-      primaryGoal = "FOCUS";
-      supplements = ["caffeine", "theanine"];
-      challengeName = "提升專注計畫";
-    } else if (stackType === 'reset') {
-      primaryGoal = "SLEEP";
-      supplements = ["magnesium", "zinc", "melatonin"];
-      challengeName = "深層放鬆計畫";
-    } else {
-      primaryGoal = "ENERGY";
-      supplements = ["none"];
-      challengeName = "每日基礎追蹤";
+  const handleSuppToggle = (id: string) => {
+    if (id === "none") {
+      setSupplements(["none"]);
+      return;
     }
-
-    saveProfile({
-      hasCompletedOnboarding: true,
-      primaryGoal,
-      currentSupplements: supplements,
-      challengeName
+    setSupplements(prev => {
+      const filtered = prev.filter(s => s !== "none");
+      if (filtered.includes(id)) return filtered.filter(s => s !== id);
+      return [...filtered, id];
     });
+  };
 
-    router.push("/");
+  const submitProfile = () => {
+    setStep(2);
+    
+    setTimeout(() => {
+      let challengeName = "14 天身體觀察";
+      if (primaryGoal === "WEIGHT") challengeName = "14 天減重基準線挑戰";
+      if (primaryGoal === "SLEEP") challengeName = "14 天睡眠改善挑戰";
+      if (primaryGoal === "ENERGY") challengeName = "14 天精力提升挑戰";
+      if (primaryGoal === "STRESS") challengeName = "14 天減壓修復挑戰";
+
+      setFinalChallengeName(challengeName);
+
+      saveProfile({
+        hasCompletedOnboarding: true,
+        primaryGoal,
+        currentSupplements: supplements,
+        challengeName
+      });
+      
+      setStep(3);
+    }, 2000);
   };
 
   const slideVariants = {
@@ -64,176 +82,181 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col px-6 max-w-md mx-auto bg-background relative overflow-hidden">
+    <div className="min-h-[100dvh] flex flex-col px-6 max-w-md mx-auto bg-background relative">
       <AnimatePresence mode="wait">
         
-        {/* Q1: Caffeine */}
+        {/* Step 0: 你想改善什麼？ */}
         {step === 0 && (
           <motion.div
-            key="q1"
+            key="goal"
             variants={slideVariants}
             initial="enter"
             animate="center"
             exit="exit"
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="w-full h-[100dvh] flex flex-col justify-center pb-20"
+            className="w-full flex flex-col pt-16 pb-12"
           >
-            <div className="space-y-4 mb-12">
-              <p className="text-xs text-muted-foreground font-bold tracking-widest uppercase">Assessment 1/3</p>
+            <div className="space-y-3 mb-10">
+              <p className="text-xs text-muted-foreground tracking-wider">1 / 2</p>
               <h1 className="text-3xl font-bold leading-snug">
-                你今天需要多少咖啡因，<br/>才能讓大腦開始轉動？
+                你最想改善<br />什麼？
               </h1>
+              <p className="text-muted-foreground text-sm">
+                選一個最在意的，我們會幫你安排對應的追蹤計畫。
+              </p>
             </div>
-            <div className="space-y-4">
-              <AnswerCard onClick={() => handleAnswer(0, 'none')} title="完全不需要" desc="我靠自然力量就能滿血" />
-              <AnswerCard onClick={() => handleAnswer(0, '1cup')} title="1 杯咖啡" desc="剛好的啟動劑" />
-              <AnswerCard onClick={() => handleAnswer(0, '2cups+')} title="2 杯以上或靠意志力" desc="不然我會覺得自己像殭屍" />
+
+            <div className="space-y-3">
+              {GOALS.map((goal) => (
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  key={goal.id}
+                  onClick={() => handleGoalSelect(goal.id)}
+                  className={`w-full text-left px-5 py-5 border transition-all ${ 
+                    primaryGoal === goal.id 
+                      ? "border-foreground bg-foreground text-background" 
+                      : "border-border hover:border-foreground/40"
+                  }`}
+                >
+                  <div className="text-base font-bold">{goal.title}</div>
+                  <div className={`text-xs mt-1 ${primaryGoal === goal.id ? "text-background/60" : "text-muted-foreground"}`}>
+                    {goal.desc}
+                  </div>
+                </motion.button>
+              ))}
             </div>
           </motion.div>
         )}
 
-        {/* Q2: Morning */}
+        {/* Step 1: 平常有在吃什麼？ */}
         {step === 1 && (
           <motion.div
-            key="q2"
+            key="supps"
             variants={slideVariants}
             initial="enter"
             animate="center"
             exit="exit"
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="w-full h-[100dvh] flex flex-col justify-center pb-20"
+            className="w-full flex flex-col pt-12 pb-32"
           >
-            <button onClick={() => setStep(0)} className="absolute top-12 left-0 text-muted-foreground">
-               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>
-            </button>
-            <div className="space-y-4 mb-12">
-              <p className="text-xs text-muted-foreground font-bold tracking-widest uppercase">Assessment 2/3</p>
+            <div className="space-y-3 mb-8">
+              <button onClick={() => setStep(0)} className="text-muted-foreground mb-2 block">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <p className="text-xs text-muted-foreground tracking-wider">2 / 2</p>
               <h1 className="text-3xl font-bold leading-snug">
-                早上鬧鐘響起的瞬間，<br/>你的大腦第一個念頭是？
+                你目前有追蹤<br />哪些補充品？
               </h1>
+              <p className="text-muted-foreground text-sm">
+                選你目前正在吃或想觀察的項目，之後可以再調整。這不會產生醫療建議。
+              </p>
             </div>
-            <div className="space-y-4">
-              <AnswerCard onClick={() => handleAnswer(1, 'good')} title="充滿幹勁，滿血復活" desc="準備迎接新的一天" />
-              <AnswerCard onClick={() => handleAnswer(1, 'snooze')} title="再讓我睡 5 分鐘" desc="身體還不想醒來" />
-              <AnswerCard onClick={() => handleAnswer(1, 'heavy')} title="感覺異常沈重" desc="為什麼要起床面對這個世界" />
+
+            <div className="flex-1 overflow-y-auto space-y-2.5 pb-4">
+              {SUPPS.map((supp) => (
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  key={supp.id}
+                  onClick={() => handleSuppToggle(supp.id)}
+                  className={`w-full px-5 py-4 text-left border transition-all flex items-center justify-between ${
+                    supplements.includes(supp.id)
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border hover:border-foreground/40"
+                  }`}
+                >
+                  <span className="font-medium">{supp.name}</span>
+                  {supplements.includes(supp.id) && (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  )}
+                </motion.button>
+              ))}
+            </div>
+
+            <div className="fixed bottom-0 left-0 right-0 p-6 bg-background border-t border-border/30">
+              <div className="max-w-md mx-auto">
+                <motion.button
+                  disabled={supplements.length === 0}
+                  onClick={submitProfile}
+                  whileTap={supplements.length > 0 ? { scale: 0.98 } : {}}
+                  className="w-full py-4 bg-foreground text-background text-sm font-bold tracking-wide disabled:opacity-20 transition-all"
+                >
+                  開始我的挑戰
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         )}
 
-        {/* Q3: Brain fog */}
+        {/* Step 2: Loading */}
         {step === 2 && (
-          <motion.div
-            key="q3"
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="w-full h-[100dvh] flex flex-col justify-center pb-20"
-          >
-            <button onClick={() => setStep(1)} className="absolute top-12 left-0 text-muted-foreground">
-               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>
-            </button>
-            <div className="space-y-4 mb-12">
-              <p className="text-xs text-muted-foreground font-bold tracking-widest uppercase">Assessment 3/3</p>
-              <h1 className="text-3xl font-bold leading-snug">
-                下午 2-4 點，是否經常<br/>經歷「腦霧當機」的斷電期？
-              </h1>
-            </div>
-            <div className="space-y-4">
-              <AnswerCard onClick={() => handleAnswer(2, 'none')} title="不太會" desc="專注力通常能維持" />
-              <AnswerCard onClick={() => handleAnswer(2, 'sometimes')} title="偶爾發生" desc="取決於前一晚的睡眠品質" />
-              <AnswerCard onClick={() => handleAnswer(2, 'always')} title="每天準時斷電" desc="需要立刻塞糖分或咖啡因" />
-            </div>
-          </motion.div>
-        )}
-
-        {/* Step 3: Analyzing Loading */}
-        {step === 3 && (
           <motion.div
             key="loading"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="w-full h-[100dvh] flex flex-col items-center justify-center space-y-6"
+            className="w-full min-h-[100dvh] flex flex-col items-center justify-center space-y-6"
           >
-            <div className="relative w-24 h-24 flex items-center justify-center">
-               <div className="absolute inset-0 border-2 border-border border-t-foreground rounded-full animate-spin" />
-               <span className="font-mono text-xs font-bold animate-pulse">ALPHA</span>
-            </div>
-            <div className="text-center space-y-2">
-              <p className="text-lg font-bold">正在為您建立專屬計畫...</p>
-              <p className="text-xs text-muted-foreground">分析您的生活作息與壓力指數...</p>
+            <div className="w-10 h-10 border-2 border-border border-t-foreground rounded-full animate-spin" />
+            <div className="text-center space-y-1">
+              <p className="text-sm font-medium">正在建立你的計畫...</p>
+              <p className="text-xs text-muted-foreground">建立可回測的身體 baseline</p>
             </div>
           </motion.div>
         )}
 
-        {/* Step 4: Diagnosis & Stack Selection */}
-        {step === 4 && (
+        {/* Step 3: Challenge Assigned */}
+        {step === 3 && (
           <motion.div
-            key="diagnosis"
-            initial={{ opacity: 0, y: 30 }}
+            key="result"
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full flex flex-col pt-16 pb-20 justify-start space-y-8"
+            className="w-full min-h-[100dvh] flex flex-col justify-center space-y-8 py-12"
           >
-            {/* Diagnosis Report Card */}
-            <div className="relative p-6 border border-border bg-foreground/[0.02] overflow-hidden">
-               <div className="absolute top-0 right-0 p-3 opacity-20"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-               <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase mb-4">Initial Assessment</p>
-               <h2 className="text-xl font-bold mb-3">身心狀態評估報告</h2>
-               <p className="text-sm text-foreground/80 leading-relaxed mb-4">
-                 根據剛才的問卷，您似乎累積了些許疲勞。
-                 <br/><br/>
-                 這不是您的錯，現代生活的快節奏很容易讓人透支。讓我們透過接下來的 14 天追蹤，幫您找回原本的好狀態吧！
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground tracking-wider">準備好了</p>
+              <h1 className="text-3xl font-bold leading-snug">
+                你的專屬挑戰
+              </h1>
+            </div>
+
+            <div className="p-6 border border-foreground space-y-4">
+               <h3 className="text-xl font-bold">
+                 {finalChallengeName}
+               </h3>
+               <p className="text-sm text-muted-foreground leading-relaxed">
+                 接下來 14 天，每天花 30 秒建立你的身體 baseline。
                </p>
-
-               {/* Fake HRV visual replaced by abstract positive visual */}
-               <div className="h-12 w-full flex items-end gap-1 opacity-50">
-                 {[40, 35, 20, 15, 25, 10, 5].map((h, i) => (
-                   <div key={i} className="flex-1 bg-foreground" style={{ height: `${h}%` }}></div>
-                 ))}
-               </div>
-               <p className="text-[10px] text-right mt-2 font-mono text-muted-foreground">ENERGY TREND</p>
             </div>
 
-            <div className="space-y-4">
-               <h3 className="text-sm font-bold mt-2">選擇您的 14 天改善計畫：</h3>
-               
-               <StackBtn onClick={() => handleSelectStack('focus')} title="[提升專注計畫]" desc="追蹤：咖啡因 + L-茶氨酸" />
-               <StackBtn onClick={() => handleSelectStack('reset')} title="[深層放鬆計畫]" desc="追蹤：鎂 + 鋅 + 幫助睡眠元素" />
-               <StackBtn onClick={() => handleSelectStack('baseline')} title="[每日基礎追蹤]" desc="單純記錄每天狀態，不特別改變飲食" />
+            {/* How it works - 3 steps */}
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground font-medium">接下來會怎麼做</p>
+              {[
+                { num: "1", title: "每天回報", desc: "體重、睡眠、活動、疲勞與飲食執行率，30 秒搞定" },
+                { num: "2", title: "建立 baseline", desc: "系統會判斷步數、睡眠與體重趨勢是否偏離你的個人基準" },
+                { num: "3", title: "決定下一步", desc: "把問題排序給你或 coach 審核，而不是直接亂改計畫" },
+              ].map((item) => (
+                <div key={item.num} className="flex items-start gap-3.5 py-2">
+                  <div className="w-6 h-6 border border-foreground flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                    {item.num}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold">{item.title}</p>
+                    <p className="text-xs text-muted-foreground">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
             </div>
+
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              onClick={() => router.push("/")}
+              className="w-full py-4 bg-foreground text-background text-sm font-bold tracking-wide transition-all"
+            >
+              開始挑戰
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
-  );
-}
-
-// Helpers
-
-function AnswerCard({ title, desc, onClick }: { title: string, desc: string, onClick: () => void }) {
-  return (
-    <motion.button
-      whileTap={{ scale: 0.98 }}
-      onClick={onClick}
-      className="w-full p-6 text-left border border-border bg-background hover:border-foreground/30 hover:bg-foreground/[0.02] transition-colors"
-    >
-      <h3 className="text-lg font-bold">{title}</h3>
-      <p className="text-xs text-muted-foreground mt-1">{desc}</p>
-    </motion.button>
-  );
-}
-
-function StackBtn({ title, desc, onClick }: { title: string, desc: string, onClick: () => void }) {
-  return (
-    <motion.button
-      whileTap={{ scale: 0.98 }}
-      onClick={onClick}
-      className="w-full text-left p-5 border border-foreground bg-foreground text-background flex flex-col hover:opacity-90 transition-opacity"
-    >
-      <span className="font-bold text-base mb-1">{title}</span>
-      <span className="text-xs opacity-80">{desc}</span>
-    </motion.button>
   );
 }

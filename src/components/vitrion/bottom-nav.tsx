@@ -3,20 +3,21 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Home, FileText, TrendingUp, Layers, Settings } from "lucide-react";
+import { Home, ClipboardCheck, TrendingUp, Users, Settings } from "lucide-react";
+import type { ElementType } from "react";
 
 interface NavItem {
   href: string;
-  icon: React.ElementType;
+  icon: ElementType;
   label: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/",             icon: Home,       label: "首頁" },
-  { href: "/checkin",      icon: FileText,   label: "紀錄" },
-  { href: "/insights",     icon: TrendingUp, label: "分析" },
-  { href: "/stack",        icon: Layers,     label: "營養品" },
-  { href: "/settings",     icon: Settings,   label: "設定" },
+  { href: "/",                   icon: Home,           label: "首頁" },
+  { href: "/v2/checkin",         icon: ClipboardCheck, label: "回報" },
+  { href: "/v2/coach-attention", icon: Users,          label: "教練" },
+  { href: "/insights",           icon: TrendingUp,     label: "分析" },
+  { href: "/settings",           icon: Settings,       label: "設定" },
 ];
 
 export function BottomNav() {
@@ -29,7 +30,7 @@ export function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/40 bg-background/95 backdrop-blur-xl safe-area-pb">
       <div className="mx-auto max-w-2xl flex items-center justify-around py-2">
         {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href));
 
           return (
             <Link

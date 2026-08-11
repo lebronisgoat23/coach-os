@@ -1,120 +1,223 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ChevronLeft, Share2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { StatTrendChart } from "@/components/vitrion/stat-trend-chart";
+import { useAlphaEngine } from "@/hooks/use-alpha-engine";
+import {
+  useSupplementReminders,
+  TIME_PRESETS,
+  type ReminderTime,
+} from "@/hooks/use-supplement-reminders";
+import { TrendingUp, Bell, Clock, ClipboardCheck, Users } from "lucide-react";
 
 export default function InsightsPage() {
-  const router = useRouter();
-
-  const handleShare = () => {
-    // Uses native Web Share API if available
-    if (navigator.share) {
-      navigator.share({
-        title: "Vitrion 健康分析報告",
-        text: "我目前的狀態評級：[極佳] 狀態絕佳！",
-        url: window.location.origin
-      }).catch(console.error);
-    } else {
-      alert("截圖就可以分享囉！");
-    }
-  };
+  const { topInsights } = useAlphaEngine();
+  const {
+    remindersByTime,
+    enabledCount,
+    nextReminder,
+    toggleReminder,
+    updateReminderTime,
+    testReminder,
+  } = useSupplementReminders();
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground flex flex-col">
-      <header className="p-6 flex items-center justify-between border-b border-border/30">
-        <button onClick={() => router.back()} className="text-muted-foreground flex items-center gap-1">
-          <ChevronLeft size={16} /> <span className="text-sm font-bold">返回</span>
-        </button>
-        <div className="font-mono text-xs tracking-widest uppercase">
-          Vitrion Report
+    <div className="relative min-h-screen bg-background">
+
+      <header className="relative z-10 border-b border-border/30 bg-background/95 backdrop-blur-xl sticky top-0">
+        <div className="mx-auto max-w-2xl px-4 py-4">
+          <h1 className="text-lg font-bold">分析</h1>
+          <p className="text-xs text-muted-foreground">身體趨勢、營養品關聯與 V2 決策層</p>
         </div>
-        <div className="w-8"></div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center p-6 pb-20">
-        
-        {/* The Share Card Component */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ type: "spring", bounce: 0.4 }}
-          className="relative w-full max-w-sm aspect-[3/4] bg-foreground text-background overflow-hidden p-8 flex flex-col justify-between shadow-2xl"
-          id="vitrion-share-card"
-        >
-          {/* Background Watermark */}
-          <div className="absolute -right-20 -bottom-20 opacity-5 pointer-events-none">
-            <div className="w-[300px] h-[300px] border-[40px] border-background rounded-full" />
-          </div>
-
-          <div className="relative z-10 space-y-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-bold text-lg tracking-widest">VITRION</h3>
-                <p className="text-[10px] uppercase font-mono opacity-60 mt-1">個人化狀態分析</p>
-              </div>
-              <div className="border border-background/20 px-2 py-1 text-xs font-mono">
-                CYCLE #01
-              </div>
-            </div>
-
+      <main className="relative z-10 mx-auto max-w-2xl px-4 py-6 space-y-6 pb-28">
+        <Card className="border-foreground bg-foreground text-background">
+          <CardContent className="grid gap-4 py-5">
             <div>
-              <p className="text-xs uppercase tracking-wider opacity-80 mb-2">當前身心健康分數</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-6xl font-bold font-mono">87</span>
-                <span className="text-xl font-bold opacity-50">/100</span>
-              </div>
+              <Badge variant="outline" className="border-background/30 text-background">
+                V2 Decision Layer
+              </Badge>
+              <h2 className="mt-3 text-xl font-black">先判斷問題，再決定動作</h2>
+              <p className="mt-2 text-sm leading-6 text-background/75">
+                新版分析不只看營養品 buff，而是把 observations 轉成步數偏離、睡眠偏離、體重趨勢、執行率與 coach attention queue。
+              </p>
             </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Link href="/v2/checkin" className="flex items-center justify-center gap-2 bg-background px-4 py-3 text-sm font-bold text-foreground">
+                <ClipboardCheck size={16} /> 今日回報
+              </Link>
+              <Link href="/v2/coach-attention" className="flex items-center justify-center gap-2 border border-background/40 px-4 py-3 text-sm font-bold">
+                <Users size={16} /> 教練工作台
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
 
-            <div className="pt-4 border-t border-background/20 space-y-4">
+        {/* Trend chart */}
+        <StatTrendChart />
+
+        {/* Correlation Insights */}
+        <Card className="border-border/40 bg-card/80 overflow-hidden">
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <TrendingUp size={18} className="text-muted-foreground" />
               <div>
-                 <p className="text-[10px] uppercase opacity-60 font-bold mb-1">整體狀態評級</p>
-                 <p className="text-2xl font-bold">[穩定] 狀態極佳</p>
-              </div>
-              
-              <div className="bg-background/10 p-3">
-                 <p className="text-xs font-medium leading-relaxed">
-                   🌟 您的恢復力與專注表現，已經超越了同年齡層 <span className="font-bold underline decoration-wavy underline-offset-2">95%</span> 的使用者，請繼續保持！
-                 </p>
+                <h2 className="text-base font-bold">發現</h2>
+                <p className="text-xs text-muted-foreground">
+                  你的紀錄和營養品之間的關聯
+                </p>
               </div>
             </div>
-          </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {topInsights.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-6">
+                資料還不夠多，持續記錄後就會自動分析。
+              </p>
+            ) : (
+              topInsights.map((insight, i) => (
+                <motion.div
+                  key={insight.id}
+                  initial={{ opacity: 0, x: -15 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 + i * 0.08 }}
+                  className={`p-3 rounded-lg ${insight.bgColor} border ${insight.borderColor}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className={`text-sm font-bold ${insight.color}`}>
+                          {insight.title}
+                        </h3>
+                        {insight.buffValue && (
+                          <Badge variant="outline" className={`text-[9px] px-1.5 py-0 h-4 ${insight.color} border-current/20`}>
+                            {insight.buffValue}
+                          </Badge>
+                        )}
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 text-muted-foreground border-border/30">
+                          {insight.confidence}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                        {insight.description}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            )}
+          </CardContent>
+        </Card>
 
-          <div className="relative z-10 border-t border-background/20 pt-4 mt-8 flex justify-between items-end">
-            <div className="w-1/2 space-y-2">
-              <div className="flex justify-between text-[10px] font-mono">
-                <span>恢復力</span>
-                <span>85%</span>
-              </div>
-              <div className="w-full h-1 bg-background/20 rounded-full overflow-hidden">
-                <div className="h-full bg-background w-[85%]" />
-              </div>
+        <Separator className="opacity-20" />
 
-              <div className="flex justify-between text-[10px] font-mono mt-2">
-                <span>壓力值</span>
-                <span>40%</span>
-              </div>
-              <div className="w-full h-1 bg-background/20 rounded-full overflow-hidden">
-                <div className="h-full border border-background shadow-[0_0_5px_rgba(255,255,255,0.5)] w-[40%]" />
+        {/* Supplement Reminders */}
+        <Card className="border-border/40 bg-card/80 overflow-hidden">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Bell size={18} className="text-muted-foreground" />
+                <div>
+                  <h2 className="text-base font-bold">營養品提醒</h2>
+                  <p className="text-xs text-muted-foreground">
+                    {enabledCount} 個提醒已開啟
+                    {nextReminder && (
+                      <span className="ml-1">
+                        · 下一個 {String(nextReminder.hour).padStart(2, "0")}:
+                        {String(nextReminder.minute).padStart(2, "0")}
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
             </div>
-            
-            <div className="text-[10px] opacity-60 font-mono text-right">
-              vitrion.app<br/>
-              SCAN TO JOIN
-            </div>
-          </div>
-        </motion.div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {(["morning", "afternoon", "evening", "bedtime"] as ReminderTime[]).map(
+              (timeSlot) => {
+                const items = remindersByTime[timeSlot];
+                if (!items || items.length === 0) return null;
+                const preset = TIME_PRESETS[timeSlot];
 
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={handleShare}
-          className="mt-12 flex items-center gap-2 px-8 py-4 bg-foreground text-background font-bold text-sm"
-        >
-          <Share2 size={16} />
-          截圖並分享
-        </motion.button>
+                return (
+                  <div key={timeSlot}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Clock size={14} className="text-muted-foreground" />
+                      <span className="text-xs font-bold text-muted-foreground">
+                        {preset.label}
+                        <span className="ml-1 font-normal">
+                          ({String(preset.hour).padStart(2, "0")}:
+                          {String(preset.minute).padStart(2, "0")})
+                        </span>
+                      </span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {items.map((rem) => (
+                        <div
+                          key={rem.id}
+                          className={`flex items-center justify-between p-2.5 transition-all ${
+                            rem.enabled ? "bg-foreground/[0.03]" : "opacity-40"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div>
+                              <p className="text-xs font-medium">{rem.supplementName}</p>
+                              <div className="flex gap-1 mt-0.5">
+                                {(["morning", "afternoon", "evening", "bedtime"] as ReminderTime[]).map((t) => (
+                                  <button
+                                    key={t}
+                                    onClick={() => updateReminderTime(rem.id, t)}
+                                    className={`text-[9px] px-1.5 py-0.5 rounded transition-colors ${
+                                      rem.time === t
+                                        ? "bg-foreground/10 text-foreground"
+                                        : "text-muted-foreground/40 hover:text-muted-foreground"
+                                    }`}
+                                  >
+                                    {TIME_PRESETS[t].label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => testReminder(rem.id)}
+                              className="text-[9px] px-2 py-1 bg-foreground/5 text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              測試
+                            </button>
+                            <button
+                              onClick={() => toggleReminder(rem.id)}
+                              className={`relative w-9 h-5 rounded-full transition-colors ${
+                                rem.enabled ? "bg-foreground" : "bg-border"
+                              }`}
+                            >
+                              <motion.div
+                                animate={{ x: rem.enabled ? 16 : 2 }}
+                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                className="absolute top-0.5 w-4 h-4 rounded-full bg-background shadow-sm"
+                              />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Disclaimer */}
+        <p className="text-[10px] text-muted-foreground/40 text-center max-w-sm mx-auto">
+          以上結果是根據你的自我紀錄做的關聯分析，不構成醫療建議。
+        </p>
       </main>
     </div>
   );
