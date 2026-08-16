@@ -12,7 +12,7 @@ const proofMetrics = [
   { label: "Daily check-in target", value: "<30 sec", detail: "低摩擦回報，目標是 activation 而非複雜表單" },
   { label: "Golden test cases", value: "20", detail: "用 regression cases 鎖住 detection engine 行為" },
   { label: "Core workflows", value: "5", detail: "signup, onboarding, check-in, recommendation, coach decision" },
-  { label: "Ops endpoints", value: "2", detail: "/healthz and /api/events" },
+  { label: "Ops endpoints", value: "2", detail: "/api/healthz and /api/events" },
   { label: "Cloud delivery", value: "CI/CD", detail: "GitHub trigger -> Cloud Build -> Cloud Run" },
 ];
 
@@ -68,10 +68,10 @@ export default function OpsPage() {
                   View GitHub
                 </a>
                 <Link
-                  href="/healthz"
+                  href="/api/healthz"
                   className="rounded-full border border-white/20 px-5 py-3 text-sm font-bold text-slate-100 hover:bg-white/10"
                 >
-                  Check /healthz
+                  Check /api/healthz
                 </Link>
               </div>
             </div>
@@ -213,11 +213,10 @@ export default function OpsPage() {
           </div>
           <p className="mt-3 text-sm leading-7 text-slate-300">
             我把 Vitrion 從產品假設做到可上線 demo：Next.js app、Docker image、Cloud Build、Artifact Registry、Cloud Run、IAM、GitHub trigger、
-            /healthz、structured growth events。這讓我能跟客戶談 AI app 的商業價值，也能跟 solution architect 溝通部署與維運細節。
+            /api/healthz、structured growth events。這讓我能跟客戶談 AI app 的商業價值，也能跟 solution architect 溝通部署與維運細節。
           </p>
         </section>
       </div>
     </main>
   );
 }
-

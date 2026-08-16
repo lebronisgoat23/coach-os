@@ -6,7 +6,7 @@ Coach OS 是一個健康與教練決策輔助產品原型。它不是單純的�
 
 - Live demo: https://coach-os-msbcm3zj7q-de.a.run.app
 - Ops case study: https://coach-os-msbcm3zj7q-de.a.run.app/ops
-- Health check: https://coach-os-msbcm3zj7q-de.a.run.app/healthz
+- Health check: https://coach-os-msbcm3zj7q-de.a.run.app/api/healthz
 - GitHub: https://github.com/lebronisgoat23/coach-os
 
 ## Quantified Product Proof
@@ -15,7 +15,7 @@ Coach OS 是一個健康與教練決策輔助產品原型。它不是單純的�
 - <30-second daily check-in target.
 - 20 golden test cases for issue detection behavior.
 - 5 core workflows: signup intent, onboarding, daily check-in, recommendation view, coach decision.
-- 2 ops endpoints: `/healthz` and `/api/events`.
+- 2 ops endpoints: `/api/healthz` and `/api/events`.
 - GCP deployment: Cloud Run, Docker, Artifact Registry, Cloud Build, IAM, GitHub CI/CD.
 
 ## Core Idea
@@ -36,7 +36,8 @@ Coach OS 是一個健康與教練決策輔助產品原型。它不是單純的�
 - `/v2/coach-attention`：教練 attention queue
 - `/insights`：趨勢、營養品關聯與 V2 decision layer 入口
 - `/ops`：GCP / Growth / MarTech case-study cockpit
-- `/healthz`：Cloud Run health check endpoint
+- `/api/healthz`：Cloud Run health check endpoint
+- `/healthz`：local-friendly health check route
 - `/api/events`：growth funnel event collection endpoint
 
 ## Tech Stack

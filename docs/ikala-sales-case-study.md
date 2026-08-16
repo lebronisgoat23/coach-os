@@ -11,7 +11,7 @@ Personal Project | Vitrion / Coach OS - AI Health Decision Support Web App
 - Built and deployed a Next.js health decision-support MVP that converts daily check-ins into structured observations, deterministic issues, and coach-reviewable recommendations.
 - Implemented production deployment on Google Cloud Run using Docker, Artifact Registry, Cloud Build, IAM, and GitHub-triggered CI/CD.
 - Added growth analytics instrumentation for signup intent, onboarding completion, first check-in, recommendation view, coach decision, and return visit events.
-- Added Cloud Run operational readiness with `/healthz`, structured JSON logs, and Cloud Logging-compatible event payloads.
+- Added Cloud Run operational readiness with `/api/healthz`, structured JSON logs, and Cloud Logging-compatible event payloads.
 - Created 20 golden test cases to validate issue detection behavior and prevent recommendation regressions.
 
 ## Interview Talk Track
@@ -28,7 +28,7 @@ For a cloud or AI solution sales role, the value is that I can explain the busin
 - Cloud Build builds, pushes, and deploys from GitHub.
 - IAM service account permissions were configured for build and deploy.
 - Cloud Logging receives structured growth and ops logs.
-- `/healthz` provides a simple production readiness endpoint.
+- `/api/healthz` provides a simple production readiness endpoint.
 - Secret Manager provides the server-only `ANALYTICS_EVENT_SALT` used to hash analytics identifiers before logs are written.
 
 ## Growth / MarTech Proof Points
