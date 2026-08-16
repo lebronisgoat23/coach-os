@@ -51,6 +51,22 @@ Recommended Looker Studio cards after exporting Cloud Logging events to BigQuery
 - D1 and D7 return visit cohorts.
 - API event volume and error rate.
 
+## BigQuery Smoke Query
+
+```sql
+SELECT
+  timestamp,
+  jsonPayload.message AS message,
+  jsonPayload.eventfamily AS event_family,
+  jsonPayload.event.eventname AS event_name,
+  jsonPayload.event.route AS route,
+  jsonPayload.event.sessionidhash AS session_hash,
+  jsonPayload.latencyms AS latency_ms
+FROM `project-3cfc2037-b798-4b79-993.vitrion_growth_ops.run_googleapis_com_stdout`
+ORDER BY timestamp DESC
+LIMIT 10;
+```
+
 ## Current GCP Resources
 
 - Project ID: `project-3cfc2037-b798-4b79-993`
