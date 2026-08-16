@@ -3,6 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { trackGrowthEvent } from "@/lib/growth/tracker";
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "未知錯誤";
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,9 +18,13 @@ export default function LoginPage() {
     e.preventDefault();
     if (!email) return;
     
+    trackGrowthEvent("signup_intent", {
+      method: "email_otp",
+      hasEmail: true,
+    });
     setState("LOADING");
     try {
-      const { supabase } = await import('@/lib/supabase');
+      const { supabase } = await import("@/lib/supabase");
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
@@ -24,8 +33,8 @@ export default function LoginPage() {
       });
       if (error) throw error;
       setState("SENT");
-    } catch (err: any) {
-      alert("發送登入信件失敗：" + err.message);
+    } catch (error) {
+      alert("發送登入信件失敗：" + getErrorMessage(error));
       setState("IDLE");
     }
   };
@@ -113,8 +122,12 @@ export default function LoginPage() {
             <button 
               type="button"
               onClick={async () => {
+                trackGrowthEvent("signup_intent", {
+                  method: "anonymous_demo",
+                  hasEmail: false,
+                });
                 try {
-                  const { supabase } = await import('@/lib/supabase');
+                  const { supabase } = await import("@/lib/supabase");
                   const { data, error } = await supabase.auth.signInAnonymously();
                   
                   if (error || !data.session) {
@@ -126,8 +139,8 @@ export default function LoginPage() {
                   }
                   
                   router.push("/onboarding");
-                } catch (err: any) {
-                  alert('登入失敗：' + err.message);
+                } catch (error) {
+                  alert("登入失敗：" + getErrorMessage(error));
                 }
               }} 
               className="mt-6 w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors"

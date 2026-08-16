@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDailyCheckIn } from "@/hooks/use-daily-checkin";
+import { trackGrowthEvent } from "@/lib/growth/tracker";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -35,8 +36,17 @@ export default function OnboardingPage() {
     { id: "none", name: "目前沒有在吃" },
   ];
 
+  useEffect(() => {
+    trackGrowthEvent("onboarding_started", {
+      step: 0,
+    });
+  }, []);
+
   const handleGoalSelect = (id: string) => {
     setPrimaryGoal(id);
+    trackGrowthEvent("onboarding_goal_selected", {
+      primaryGoal: id,
+    });
     setTimeout(() => setStep(1), 350);
   };
 
@@ -69,6 +79,11 @@ export default function OnboardingPage() {
         primaryGoal,
         currentSupplements: supplements,
         challengeName
+      });
+      trackGrowthEvent("onboarding_completed", {
+        primaryGoal,
+        supplementCount: supplements.includes("none") ? 0 : supplements.length,
+        challengeName,
       });
       
       setStep(3);

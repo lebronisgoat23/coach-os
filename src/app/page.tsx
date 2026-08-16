@@ -78,6 +78,9 @@ export default function Dashboard() {
               <Link href="/v2/coach-attention" className="border border-background/40 px-4 py-3 text-center text-sm font-bold text-background">
                 看教練工作台
               </Link>
+              <Link href="/ops" className="border border-background/40 px-4 py-3 text-center text-sm font-bold text-background sm:col-span-2">
+                查看 GCP / Growth Ops 案例
+              </Link>
             </div>
           </div>
         </section>

@@ -23,12 +23,12 @@ interface GoldenFile {
 }
 
 const goldenCases = JSON.parse(
-  readFileSync(path.join(process.cwd(), "..", "evals", "golden_cases.json"), "utf8")
+  readFileSync(path.join(process.cwd(), "evals", "golden_cases.json"), "utf8")
 ) as GoldenFile;
 
 describe("V2 golden cases", () => {
-  it("keeps at least ten representative cases", () => {
-    expect(goldenCases.cases.length).toBeGreaterThanOrEqual(10);
+  it("keeps at least twenty representative cases", () => {
+    expect(goldenCases.cases.length).toBeGreaterThanOrEqual(20);
   });
 
   for (const testCase of goldenCases.cases) {

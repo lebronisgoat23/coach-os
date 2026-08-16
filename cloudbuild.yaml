@@ -51,6 +51,8 @@ steps:
       - --memory=512Mi
       - --min-instances=0
       - --max-instances=2
+      - --set-env-vars=NEXT_PUBLIC_COMMIT_SHA=${SHORT_SHA}
+      - --set-secrets=ANALYTICS_EVENT_SALT=vitrion-analytics-salt:latest
 
 images:
   - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPOSITORY}/${_IMAGE_NAME}:${SHORT_SHA}

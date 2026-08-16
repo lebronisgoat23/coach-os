@@ -6,6 +6,7 @@ import { BottomNav } from "@/components/vitrion/bottom-nav";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/auth-provider";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
+import { GrowthTelemetry } from "@/components/growth-telemetry";
 import "./globals.css";
 
 const inter = Inter({
@@ -49,6 +50,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <TooltipProvider>
+              <GrowthTelemetry />
               {children}
               <BottomNav />
               <PwaInstallPrompt />

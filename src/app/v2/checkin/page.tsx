@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { buildObservationsFromCheckIn, persistV2CheckIn } from "@/lib/v2/check-in-service";
 import type { V2CheckInInput } from "@/lib/v2/types";
+import { trackGrowthEvent } from "@/lib/growth/tracker";
 
 type SaveState =
   | { status: "idle"; message: string }
@@ -72,6 +73,12 @@ export default function V2CheckInPage() {
   const effectiveUserId = user?.id ?? (isDemo ? "demo-user" : null);
   const preview = effectiveUserId ? buildObservationsFromCheckIn(toCheckInInput(effectiveUserId, form)) : [];
 
+  useEffect(() => {
+    trackGrowthEvent("checkin_started", {
+      mode: isDemo ? "demo" : "authenticated",
+    });
+  }, [isDemo]);
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!effectiveUserId) {
@@ -93,6 +100,11 @@ export default function V2CheckInPage() {
           status: "success",
           message: `Demo mode：已建立 ${observations.length} 筆 observation 預覽，未寫入資料庫。`,
         });
+        trackGrowthEvent("checkin_submitted", {
+          mode: "demo",
+          observationCount: observations.length,
+          hasNote: Boolean(input.note),
+        });
         toast.success("V2 check-in 已建立本地預覽");
         return;
       }
@@ -101,6 +113,11 @@ export default function V2CheckInPage() {
       setSaveState({
         status: "success",
         message: `已寫入 check_ins:${result.checkInId}，observations:${result.observationCount}。`,
+      });
+      trackGrowthEvent("checkin_submitted", {
+        mode: "authenticated",
+        observationCount: result.observationCount,
+        hasNote: Boolean(input.note),
       });
       toast.success("V2 check-in 已寫入 canonical tables");
     } catch (error) {

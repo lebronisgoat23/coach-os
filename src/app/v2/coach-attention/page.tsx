@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { buildCoachAttentionDemoClients } from "@/lib/v2/demo-data";
 import { createLocalDecision, persistDecision } from "@/lib/v2/decision-service";
+import { trackGrowthEvent } from "@/lib/growth/tracker";
 import type {
   CoachAttentionClient,
   Decision,
@@ -58,6 +59,20 @@ export default function CoachAttentionPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (loading || clients.length === 0) return;
+
+    trackGrowthEvent("recommendation_viewed", {
+      clientCount: clients.length,
+      issueCount: clients.reduce((total, client) => total + client.issues.length, 0),
+      highSeverityIssueCount: clients.reduce(
+        (total, client) => total + client.issues.filter((issue) => issue.severity === "high").length,
+        0
+      ),
+      mode: isDemo ? "demo" : "authenticated",
+    });
+  }, [clients, isDemo, loading]);
+
   async function handleDecision(client: CoachAttentionClient, action: DecisionAction) {
     const coachId = user?.id ?? "demo-coach";
     const input = {
@@ -78,6 +93,12 @@ export default function CoachAttentionPage() {
     try {
       const decision = canPersist ? await persistDecision(input) : createLocalDecision(input);
       setDecisions((current) => [decision, ...current]);
+      trackGrowthEvent("recommendation_decision", {
+        action,
+        mode: canPersist ? "persisted" : "demo",
+        issueCount: client.issues.length,
+        recommendationActionType: client.recommendation.actionType,
+      });
       toast.success(canPersist ? "Decision 已寫入資料庫" : "Demo decision 已記錄於本機");
     } catch (error) {
       const message = error instanceof Error ? error.message : "未知錯誤";
